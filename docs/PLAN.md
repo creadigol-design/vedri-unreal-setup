@@ -10,6 +10,7 @@ the build deliberately departs from the brief. Where the two disagree, this file
 | D1 | **Split working model.** Engine-facing code is written in a local Claude Code session on the Mac, where the Epic-linked git credentials can clone `EpicGames/UnrealEngine`. The engine-independent core and its tests can be written anywhere. | The cloud session's GitHub access is limited to this studio's repos, and Epic's repo refused it. Rule 1 says not to guess engine APIs. |
 | D2 | **Hybrid integration architecture.** Blackmagic and AJA: no compile-time link. Card classes are loaded by object path and their settings are set through reflection, every name checked against the headers. nDisplay: one small optional module (`VedriVPToolkitNDisplay`) that links `DisplayCluster*`, declared as an optional plugin dependency and loaded only when nDisplay is enabled. | If a module links `BlackmagicMedia` or `DisplayCluster`, its plugin must be declared in the `.uplugin`, which force-enables it. That would put nDisplay in green-screen projects and make Step 1 pointless. Cards only need objects created and properties set, so reflection is enough. Building an nDisplay cluster through reflection would be fragile. |
 | D3 | **Proprietary licence.** All rights reserved, licensed to end users through Fab's standard licence or a separate agreement. | Owner's decision. |
+| D4 | **One tracked camera for now; multi-cam later.** Preset schema v1 and M1–M6 handle a single tracked Cine Camera. Multi-cam comes after M7 as schema v2: `tracking` and `lens` move into a `cameras` array, and v1 presets migrate to `cameras[0]` in `MigratePresetJson`. Until then, editor code reads the tracking and lens settings through one accessor rather than reaching into `WizardConfig` everywhere, and generated camera assets are named so that a second camera fits alongside them. | Owner's decision. The business plan centres on multi-cam green screen, so v2 is expected. |
 
 ## Departures from the brief
 
@@ -47,4 +48,3 @@ the build deliberately departs from the brief. Where the two disagree, this file
 
 - **Mo-Sys Live Link plugin name.** Detection needs the exact `.uplugin` name. It isn't in Epic's source. Ask the owner, or read it from a Mo-Sys install.
 - **LED panel model.** The wall's pixel pitch defaults to a 2.84 mm placeholder until the panel is chosen.
-- **Multiple tracked cameras.** The business plan centres on multi-cam green screen, but the brief describes one tracked camera. Preset schema v1 holds one camera. Supporting several means a schema bump (planned for, not built).

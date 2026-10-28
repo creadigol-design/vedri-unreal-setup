@@ -100,6 +100,8 @@ composes actions. Rules:
   `Overwrite`, unticked by default.
 - Settings go through `UDeveloperSettings` / `SaveConfig`, never hand-edited `.ini` files.
 - Log every applied change to `LogVPToolkit`.
+- One tracked camera for now (D4). Read tracking and lens settings through a single accessor, and name
+  camera assets so a second camera fits alongside them. Multi-cam arrives as preset schema v2.
 
 ## Adding a video I/O card family
 
