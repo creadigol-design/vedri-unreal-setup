@@ -1,0 +1,13 @@
+* text=auto eol=lf
+
+# Windows scripts keep CRLF so they run cleanly from PowerShell / cmd
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Unreal binary assets
+*.uasset binary
+*.umap binary
+*.png binary
+*.jpg binary
+*.ico binary

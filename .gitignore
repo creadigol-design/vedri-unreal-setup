@@ -1,0 +1,24 @@
+# Unreal build output (plugin and any host project)
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Build/
+*.sln
+*.VC.db
+*.opensdf
+*.sdf
+*.suo
+.vs/
+.vscode/
+.idea/
+
+# Engine reference source must never be committed (see CLAUDE.md)
+ue-ref/
+
+# Standalone test build output
+Tests/Standalone/build/
+
+# OS clutter
+.DS_Store
+Thumbs.db
