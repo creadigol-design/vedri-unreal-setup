@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "name": "vedrí green screen 25p Blackmagic",
+  "description": "Green screen stage: Blackmagic DeckLink, 1080p25, genlock from SDI input, clean CG out for the external keyer, Mo-Sys StarTracker, Blackmagic PYXIS 6K.",
+  "mode": "greenScreen",
+  "videoIO": {
+    "cardFamily": "blackmagic",
+    "deviceIndex": 0,
+    "inputPort": 1,
+    "outputPort": 2,
+    "genlockSource": "sdiInput"
+  },
+  "timing": {
+    "frameRate": {
+      "numerator": 25,
+      "denominator": 1
+    },
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dropFrameTimecode": false
+  },
+  "videoOut": {
+    "enabled": true,
+    "pixelFormat": "yuv10",
+    "keyAndFill": false,
+    "source": "activeViewport"
+  },
+  "greenScreen": {
+    "createPlateSource": true,
+    "createMatteOutput": false,
+    "matteOutputPort": 3
+  },
+  "tracking": {
+    "source": "mosys",
+    "freeDUdpPort": 40000,
+    "subjectName": "TrackedCamera",
+    "autoApplyOnStartup": true
+  },
+  "lens": {
+    "cameraSensor": "bmd_pyxis_6k",
+    "sensorWidthMm": 36,
+    "sensorHeightMm": 24
+  },
+  "selectionOverrides": {}
+}

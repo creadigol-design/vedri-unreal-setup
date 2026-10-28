@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "name": "vedrí LED 8x3m 25p Blackmagic",
+  "description": "LED stage: 8 m x 3 m flat wall, 2 render nodes, Blackmagic DeckLink, 1080p25, Mo-Sys StarTracker, Blackmagic PYXIS 6K. Panel pitch is a placeholder: set it from your panel spec sheet.",
+  "mode": "led",
+  "videoIO": {
+    "cardFamily": "blackmagic",
+    "deviceIndex": 0,
+    "inputPort": 1,
+    "outputPort": 2,
+    "genlockSource": "sdiInput"
+  },
+  "timing": {
+    "frameRate": {
+      "numerator": 25,
+      "denominator": 1
+    },
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "dropFrameTimecode": false
+  },
+  "videoOut": {
+    "enabled": true,
+    "pixelFormat": "yuv10",
+    "keyAndFill": false,
+    "source": "activeViewport"
+  },
+  "led": {
+    "wall": {
+      "widthM": 8,
+      "heightM": 3,
+      "panels": {
+        "pixelPitchMm": 2.84,
+        "tileWidthMm": 500,
+        "tileHeightMm": 500,
+        "pixelsPerTileX": 0,
+        "pixelsPerTileY": 0
+      },
+      "renderNodes": 2,
+      "curvatureRadiusM": 0,
+      "bottomHeightM": 0,
+      "ceiling": {
+        "enabled": false,
+        "widthM": 8,
+        "depthM": 3,
+        "panels": {
+          "pixelPitchMm": 2.84,
+          "tileWidthMm": 500,
+          "tileHeightMm": 500,
+          "pixelsPerTileX": 0,
+          "pixelsPerTileY": 0
+        },
+        "heightM": 0,
+        "nodeIndex": -1
+      }
+    },
+    "generateSwitchboardStub": true,
+    "createDefaultLightCards": true,
+    "createChromakeyMarkers": true
+  },
+  "tracking": {
+    "source": "mosys",
+    "freeDUdpPort": 40000,
+    "subjectName": "TrackedCamera",
+    "autoApplyOnStartup": true
+  },
+  "lens": {
+    "cameraSensor": "bmd_pyxis_6k",
+    "sensorWidthMm": 36,
+    "sensorHeightMm": 24
+  },
+  "selectionOverrides": {}
+}
