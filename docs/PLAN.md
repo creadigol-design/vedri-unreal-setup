@@ -1,50 +1,56 @@
 # Plan and decisions
 
-The requirements are in [BRIEF.md](BRIEF.md). This file records what has been decided since and where
-the build deliberately departs from the brief. Where the two disagree, this file wins.
+The requirements are in [BRIEF.md](BRIEF.md) (revised 2026-10-29 for the Windows PC, UE 5.5–5.8). This
+file records what has been decided since and where the build deliberately departs from the brief. Where
+the two disagree, this file wins.
 
-## Decisions (agreed 2026-10-28)
+## Decisions
 
 | # | Decision | Why |
 |---|---|---|
-| D1 | **Split working model.** Engine-facing code is written in a local Claude Code session on the Mac, where the Epic-linked git credentials can clone `EpicGames/UnrealEngine`. The engine-independent core and its tests can be written anywhere. | The cloud session's GitHub access is limited to this studio's repos, and Epic's repo refused it. Rule 1 says not to guess engine APIs. |
-| D2 | **Hybrid integration architecture.** Blackmagic and AJA: no compile-time link. Card classes are loaded by object path and their settings are set through reflection, every name checked against the headers. nDisplay: one small optional module (`VedriVPToolkitNDisplay`) that links `DisplayCluster*`, declared as an optional plugin dependency and loaded only when nDisplay is enabled. | If a module links `BlackmagicMedia` or `DisplayCluster`, its plugin must be declared in the `.uplugin`, which force-enables it. That would put nDisplay in green-screen projects and make Step 1 pointless. Cards only need objects created and properties set, so reflection is enough. Building an nDisplay cluster through reflection would be fragile. |
+| D1 | **Engine work happens in Claude Code running on the Windows PC**, in this repo, reading the installed engines (5.5, 5.6, 5.7, 5.8). Cloud sessions only touch the engine-independent core, tests and docs. | Cloud sessions can't see the PC's engine installs. The 5.8 MCP dev loop is loopback-only (`127.0.0.1`). |
+| D2 | **Hybrid integration architecture.** Blackmagic and AJA: no compile-time link. Card classes are loaded by object path and their settings are set through reflection, every name checked against the headers. nDisplay: one small optional module (`VedriVPToolkitNDisplay`) that links `DisplayCluster*`, declared as an optional plugin dependency and loaded only when nDisplay is enabled. The 5.8 MCP toolset follows the same pattern (`VedriVPToolkitMCP`). | If a module links `BlackmagicMedia` or `DisplayCluster`, its plugin must be declared in the `.uplugin`, which force-enables it. That would put nDisplay in green-screen projects and make Step 1 pointless. |
 | D3 | **Proprietary licence.** All rights reserved, licensed to end users through Fab's standard licence or a separate agreement. | Owner's decision. |
-| D4 | **One tracked camera for now; multi-cam later.** Preset schema v1 and M1–M6 handle a single tracked Cine Camera. Multi-cam comes after M7 as schema v2: `tracking` and `lens` move into a `cameras` array, and v1 presets migrate to `cameras[0]` in `MigratePresetJson`. Until then, editor code reads the tracking and lens settings through one accessor rather than reaching into `WizardConfig` everywhere, and generated camera assets are named so that a second camera fits alongside them. | Owner's decision. The business plan centres on multi-cam green screen, so v2 is expected. |
+| D4 | **One tracked camera for now; multi-cam later.** Schema v1 and M1–M7 handle a single tracked Cine Camera. Multi-cam comes after M7 as schema v2: `tracking` and `lens` move into a `cameras` array, and v1 presets migrate to `cameras[0]` in `MigratePresetJson`. Until then, editor code reads the tracking and lens settings through one accessor, and generated camera assets are named so a second camera fits alongside them. | Owner's decision. The business plan centres on multi-cam green screen, so v2 is expected. |
+| D5 | **Mo-Sys provider = the free Mo-Sys Live Link plugin**, not the paid VP Pro. | Owner's decision (2026-10-29). Its exact `.uplugin` name and Live Link source class still need reading from an install (see [TRACKING_PROVIDERS.md](TRACKING_PROVIDERS.md)). |
+| D6 | **Tracking is a list of providers.** Preset `tracking` = `provider` id + `subjectName` + `autoApplyOnStartup` + `providerSettings` (a JSON object the provider owns). A missing setting means "use the provider's documented default", read from the installed plugin. Default provider is FreeD. | Revised brief, Step 6: "don't invent port numbers". |
 
-## Departures from the brief
+## Departures from the brief (owner confirmed "keep all", 2026-10-29)
 
 | # | Brief says | We do | Why |
 |---|---|---|---|
-| P1 | One module type `Editor` | Two modules: `VedriVPToolkit` (Runtime, minimal) and `VedriVPToolkitEditor` (Editor), plus the optional `VedriVPToolkitNDisplay` (D2) | nDisplay render nodes run the stage level as a game (`-game` from Switchboard, or a packaged build), where Editor modules aren't available. Anything placed in a level (the tracked camera) must live in a Runtime module. Confirm the `-game` module-loading behaviour in M1. |
-| P2 | Blueprint actors and starter levels in the plugin's `Content/` | Generated by C++ at Apply time into `/Game/VPToolkit/…` | There's no engine on the authoring machine to make `.uasset`s. Also, an asset saved in a newer engine won't load in 5.5, so shipped content would have to be authored in 5.5 on the PC. Generating at Apply fits the "re-runnable, show a diff first" rule. |
-| P3 | Levels named `BP_VP_GreenScreen_Stage` / `BP_VP_LED_Stage` | `L_VP_GreenScreen_Stage` / `L_VP_LED_Stage` | `BP_` means Blueprint by convention; `L_` is the usual level prefix. The actor stays `BP_VP_TrackedCineCamera`. |
-| P4 | Core under `Source/VedriVPToolkit/Private/Core/` | `Source/VedriVPToolkitEditor/Private/Core/` | Only the editor module uses it, and one module can't include another module's `Private/` headers. |
-| P5 | Windows-only modules behind `Target.Platform == Win64` defines | Gating is by *plugin enablement* (D2); the `.uplugin` `PlatformAllowList` is `Win64` | The problem is whether a plugin is enabled, not the platform: Blackmagic, AJA and nDisplay all ship with the engine on Win64. |
-| P6 | Bundled presets in `Content/` | `Resources/Presets/*.json` | They're JSON, not `.uasset`s. Packaging still needs to be confirmed on the PC (WINDOWS_TODO). |
-| P7 | All translatable strings in one place | All `LOCTEXT` in one file, `Private/Text/VPToolkitText.cpp`; validation messages keyed by code (catalogue in [VALIDATION_CODES.md](VALIDATION_CODES.md)) | Gives one file to review en/cy, and Core stays free of user-facing text. |
+| P1 | One module type `Editor` | `VedriVPToolkit` (Runtime, minimal) + `VedriVPToolkitEditor` (Editor), plus the optional `VedriVPToolkitNDisplay` and `VedriVPToolkitMCP` (D2) | nDisplay render nodes run the stage level as a game (`-game` from Switchboard, or a packaged build), where Editor modules aren't available. The tracked camera is a C++ actor class in the Runtime module. Confirm the `-game` module-loading behaviour in M1. |
+| P2 | Blueprint actors and starter levels in the plugin's `Content/` | Generated by C++ at Apply time into `/Game/VPToolkit/…` | Per-project assets (Media Profile, Live Link preset, Lens File, nDisplay config, levels) have to be generated anyway to show a diff and stay re-runnable. Any shipped content would have to be saved in 5.5 to open in all four versions. |
+| P3 | Levels named `BP_VP_GreenScreen_Stage` / `BP_VP_LED_Stage` | `L_VP_GreenScreen_Stage` / `L_VP_LED_Stage` | `BP_` means Blueprint by convention; `L_` is the usual level prefix. |
+| P4 | Core under `Source/VedriVPToolkit/Private/Core/` | `Source/VedriVPToolkitEditor/Public/Core/` | The editor, MCP and test code use it; nothing at runtime does. One module can't include another's `Private/` headers. |
+| P5 | Gate optional modules by platform | Gate by *plugin enablement* (D2); `PlatformAllowList` is `Win64` | Blackmagic, AJA and nDisplay all ship with the engine on Win64. The problem is whether they're enabled. |
+| P6 | Bundled presets in `Content/` | `Resources/Presets/*.json` | They're JSON, not `.uasset`s. Confirm `BuildPlugin` packages them (WINDOWS_TODO). |
+| P7 | All translatable strings in one place | All `LOCTEXT` in `Private/Text/VPToolkitText.cpp`; validation messages keyed by code ([VALIDATION_CODES.md](VALIDATION_CODES.md)) | Gives one file to review en/cy, and Core stays free of user-facing text. |
+| P8 | `Docs/` | `docs/` (lowercase, already in use) | Case-only renames are painful on Windows and macOS checkouts. |
 
 ## Status
 
 | Milestone | State |
 |---|---|
-| Core layer (C): wall maths, timing, presets and their JSON, validation, Summary/Apply diff model, setup report, standalone tests | **Done** (56 tests, clang + gcc + ASan/UBSan) |
-| M1 engine skeleton (`.uplugin`, `.Build.cs`, menus/toolbar, wizard shell, plugin enablement) | Not started: needs the local session (D1) |
-| M2–M6 | Not started |
-| M7 (PC) | Waiting for hardware |
+| Core layer: wall maths, timing, presets and their JSON, validation, provider-based tracking config, Summary/Apply diff model, setup report, four bundled presets, standalone tests | **Done** (56 tests: clang, gcc, ASan/UBSan) |
+| Tracking vendor research ([TRACKING_PROVIDERS.md](TRACKING_PROVIDERS.md)) | First pass done. Nothing verified: needs checking against installed plugins. |
+| M1 to M7 | Not started: needs the PC session (D1) |
 
-## Next session (local, on the Mac)
+## Next session (Claude Code on the PC)
 
-1. Clone the reference engine source (BRIEF rule 1) into `../ue-ref/<version>` for 5.5, 5.6 and the newest released 5.x tag. Check `git ls-remote --tags` to find the newest; don't assume it.
-2. Read the modules listed in rule 1. Report the class, property and plugin names you'll actually use, and the differences between 5.5 and the newest version, **before** writing engine code. In particular:
-   - the `.uplugin` descriptor fields, including optional plugin dependencies (`Engine/Source/Runtime/Projects`, `PluginDescriptor` / `PluginReferenceDescriptor`), because D2 depends on them;
-   - the plugin names for Step 1 (each `.uplugin` file name in the tree);
-   - the Blackmagic / AJA timecode provider, custom time step, media source and media output classes, and the property names the reflection layer will set;
-   - the Media Profile settings classes, and how the active profile is set;
-   - nDisplay configuration data types for generating a cluster, nodes, viewports, screens/meshes and the ICVFX camera.
-3. Then M1, keeping the milestone rules in the brief.
+1. Record the real engine paths (5.5, 5.6, 5.7, 5.8) and the 5.8 test project path in this file.
+2. Plan step from the brief. Read the installed modules and report the class, property and plugin names
+   you'll use, and the differences from 5.5 to 5.8, **before** writing engine code. In particular:
+   - the `.uplugin` descriptor fields, including optional plugin dependencies (`Engine/Source/Runtime/Projects`), because D2 depends on them;
+   - every Step 1 plugin name, in each version;
+   - the Blackmagic and AJA timecode provider, custom time step, media source and media output classes, and the property names the reflection layer will set;
+   - the Media Profile classes, and how the active profile is set;
+   - Live Link FreeD, XR, VRPN and Hub source settings and their defaults;
+   - the nDisplay configuration data types (cluster, nodes, viewports, screens/meshes, ICVFX camera);
+   - how toolsets register in 5.8. Research found Epic describing an experimental MCP plugin, but no Epic text naming a "Toolset Registry". Find the real mechanism in the 5.8 install.
+3. Verify [TRACKING_PROVIDERS.md](TRACKING_PROVIDERS.md) against the vendor plugins you can install (the free Mo-Sys Live Link plugin first), and mark each row Verified.
+4. Then M1, following the milestone rules in the brief.
 
 ## Open questions
 
-- **Mo-Sys Live Link plugin name.** Detection needs the exact `.uplugin` name. It isn't in Epic's source. Ask the owner, or read it from a Mo-Sys install.
 - **LED panel model.** The wall's pixel pitch defaults to a 2.84 mm placeholder until the panel is chosen.

@@ -6,9 +6,11 @@ camera tracking and lens, and either a green-screen stage (clean CG out to an ex
 stage (nDisplay cluster generated from the wall's dimensions). Every change is previewed and confirmed
 before it's applied, and the wizard is safe to re-run.
 
-Made by vedrí studio, North Wales. Targets Unreal Engine 5.5, 5.6 and the
-newest 5.x on Windows (Win64). Supports Blackmagic DeckLink and AJA cards, and Mo-Sys StarTracker or
-generic FreeD tracking.
+Made by vedrí studio, North Wales. Targets Unreal Engine 5.5, 5.6, 5.7 and 5.8 on Windows (Win64).
+Supports Blackmagic DeckLink and AJA cards, and a list of tracking providers: built-in FreeD, Live Link
+XR, VRPN and Live Link Hub, plus Mo-Sys StarTracker, ZEISS CinCraft, stYpe, Ncam, OptiTrack, Vicon and
+VIVE Mars when their plugins are installed. On 5.8 the same setup will also be available as an MCP
+toolset, so a stage can be set up from a chat prompt.
 
 ## Status
 
@@ -24,9 +26,9 @@ still has to be proven on the Windows PC.
 |---|---|
 | `VedriVPToolkit/` | The plugin (what gets packaged for Fab) |
 | `VedriVPToolkit/Source/VedriVPToolkitEditor/Public/Core/` | Engine-independent core, header-only |
-| `VedriVPToolkit/Resources/Presets/` | Bundled presets (`vedri-greenscreen-25p-blackmagic`, `vedri-led-8x3m-25p-blackmagic`) |
+| `VedriVPToolkit/Resources/Presets/` | Bundled presets: `vedri-greenscreen-25p-blackmagic-mosys`, `vedri-led-8x3m-25p-blackmagic-mosys`, `greenscreen-freed`, `led-freed` |
 | `Tests/Standalone/` | Core tests that build without Unreal |
-| `docs/` | Brief, plan, Windows TODO, test plan, validation-code catalogue |
+| `docs/` | Brief, plan, Windows TODO, test plan, validation-code catalogue, tracking provider notes |
 
 ## Running the core tests
 

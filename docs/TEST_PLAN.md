@@ -4,9 +4,12 @@ Step-by-step checks that someone who didn't write the code can follow. Each mile
 The PC sections cover which menu to use, what to click, what should happen, and what to check on the
 SDI monitor and the StarTracker.
 
-## Core layer: standalone tests (Mac or any machine with a C++ compiler)
+## Core layer: standalone tests (any machine with a C++ compiler)
 
-Needs the Xcode command line tools on the Mac (`xcode-select --install`), or clang/gcc on Linux, plus `python3`.
+Needs `make`, clang or gcc, and `python3`. On the Windows PC the easiest route is WSL: run
+`wsl --install -d Ubuntu` once, then `sudo apt install build-essential clang python3` inside Ubuntu,
+and run the commands below from the repo folder (e.g. `cd /mnt/c/Dev/vedri-unreal-setup`). On a Mac,
+install the Xcode command line tools (`xcode-select --install`).
 
 1. Open a terminal in the repo root.
 2. Run `make -C Tests/Standalone`.
@@ -21,6 +24,7 @@ Needs the Xcode command line tools on the Mac (`xcode-select --install`), or cla
 
 If anything fails, the failing line is printed as `File.cpp:LINE: FAILED [TestName] ...`.
 
-## PC (M7)
+## On-set checks (PC + real kit)
 
-The PC sections are added as M1–M6 land.
+The checks no test can cover: DeckLink/AJA genlock lock, timecode on the SDI output, the StarTracker
+subject moving the camera, nDisplay on real nodes. Each milestone adds its section from M1 onward.
