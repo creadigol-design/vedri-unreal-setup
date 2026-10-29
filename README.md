@@ -23,7 +23,7 @@ still has to be proven on the Windows PC.
 | Path | What |
 |---|---|
 | `VedriVPToolkit/` | The plugin (what gets packaged for Fab) |
-| `VedriVPToolkit/Source/VedriVPToolkitEditor/Private/Core/` | Engine-independent core, header-only |
+| `VedriVPToolkit/Source/VedriVPToolkitEditor/Public/Core/` | Engine-independent core, header-only |
 | `VedriVPToolkit/Resources/Presets/` | Bundled presets (`vedri-greenscreen-25p-blackmagic`, `vedri-led-8x3m-25p-blackmagic`) |
 | `Tests/Standalone/` | Core tests that build without Unreal |
 | `docs/` | Brief, plan, Windows TODO, test plan, validation-code catalogue |

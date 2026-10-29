@@ -80,8 +80,10 @@ namespace
 		Config.Led.bGenerateSwitchboardStub = false;
 		Config.Led.bCreateDefaultLightCards = false;
 		Config.Led.bCreateChromakeyMarkers = false;
-		Config.Tracking.Source = TrackingSourceFreeD;
-		Config.Tracking.FreeDUdpPort = 6301;
+		Config.Tracking.ProviderId = TrackingProviderVicon;
+		Config.Tracking.ProviderSettings.Set("port", 804);
+		Config.Tracking.ProviderSettings.Set("server", "10.0.0.20");
+		Config.Tracking.ProviderSettings.Set("nested", JsonValue::MakeObject()).Set("flag", true);
 		Config.Tracking.SubjectName = "Camera A";
 		Config.Tracking.bAutoApplyOnStartup = false;
 		Config.Lens.CameraSensorId = CustomCameraSensorId;
@@ -168,19 +170,32 @@ VEDRI_TEST(Preset_BundledFilesMatchDefinitionsAndValidate)
 VEDRI_TEST(Preset_BundledPresetsDescribeVedriStudio)
 {
 	const std::vector<VedriTest::BundledPreset> Bundled = VedriTest::MakeBundledPresets();
-	ASSERT_TRUE(Bundled.size() == 2);
+	ASSERT_TRUE(Bundled.size() == 4);
+	EXPECT_EQ(std::string(Bundled[0].FileStem), "vedri-greenscreen-25p-blackmagic-mosys");
+	EXPECT_EQ(std::string(Bundled[1].FileStem), "vedri-led-8x3m-25p-blackmagic-mosys");
+	EXPECT_EQ(std::string(Bundled[2].FileStem), "greenscreen-freed");
+	EXPECT_EQ(std::string(Bundled[3].FileStem), "led-freed");
+	for (const VedriTest::BundledPreset& Preset : Bundled)
+	{
+		EXPECT_TRUE(Preset.Config.Timing.Rate == (FrameRate{25, 1}));
+		EXPECT_TRUE(Preset.Config.Timing.Res == (Resolution{1920, 1080}));
+		EXPECT_EQ(Preset.Config.VideoIO.CardFamily, "blackmagic");
+		EXPECT_EQ(Preset.Config.Tracking.ProviderSettings.Size(), size_t(0)); // providers use their documented defaults
+	}
 	const WizardConfig& Green = Bundled[0].Config;
 	EXPECT_EQ(Green.Mode, EShootMode::GreenScreen);
-	EXPECT_EQ(Green.VideoIO.CardFamily, "blackmagic");
-	EXPECT_TRUE(Green.Timing.Rate == (FrameRate{25, 1}));
-	EXPECT_TRUE(Green.Timing.Res == (Resolution{1920, 1080}));
+	EXPECT_EQ(Green.Tracking.ProviderId, "mosys");
 	EXPECT_EQ(Green.Lens.CameraSensorId, "bmd_pyxis_6k");
 	const WizardConfig& Led = Bundled[1].Config;
 	EXPECT_EQ(Led.Mode, EShootMode::Led);
+	EXPECT_EQ(Led.Tracking.ProviderId, "mosys");
 	EXPECT_EQ(Led.Led.Wall.WidthM, 8.0);
 	EXPECT_EQ(Led.Led.Wall.HeightM, 3.0);
 	EXPECT_EQ(Led.Led.Wall.RenderNodeCount, 2u);
-	EXPECT_TRUE(Led.Timing.Rate == (FrameRate{25, 1}));
+	EXPECT_EQ(Bundled[2].Config.Mode, EShootMode::GreenScreen);
+	EXPECT_EQ(Bundled[2].Config.Tracking.ProviderId, "freed");
+	EXPECT_EQ(Bundled[3].Config.Mode, EShootMode::Led);
+	EXPECT_EQ(Bundled[3].Config.Tracking.ProviderId, "freed");
 }
 
 VEDRI_TEST(Preset_MissingFieldsKeepDefaults)
@@ -214,6 +229,7 @@ VEDRI_TEST(Preset_WrongTypesAreErrors)
 		{R"({"schemaVersion": 1, "videoIO": {"inputPort": -1}})", "videoIO.inputPort"},
 		{R"({"schemaVersion": 1, "videoOut": {"enabled": "yes"}})", "videoOut.enabled"},
 		{R"({"schemaVersion": 1, "tracking": []})", "tracking"},
+		{R"({"schemaVersion": 1, "tracking": {"providerSettings": 40000}})", "tracking.providerSettings"},
 		{R"({"schemaVersion": 1, "mode": "led", "led": {"wall": {"ceiling": {"nodeIndex": 1.5}}}})", "led.wall.ceiling.nodeIndex"},
 		{R"({"schemaVersion": 1, "selectionOverrides": {"plugin:LiveLink": 1}})", "selectionOverrides.plugin:LiveLink"},
 	};
@@ -363,11 +379,17 @@ VEDRI_TEST(Validate_CatchesBadChoices)
 	EXPECT_TRUE(Has(Config, "wall.sizeNotWholeTiles", "led.wall.widthM", ESeverity::Warning));
 
 	Config = MakeDefaultConfig(EShootMode::GreenScreen);
-	Config.Tracking.Source = "ncam";
-	EXPECT_TRUE(Has(Config, "tracking.unknownSource", "tracking.source", ESeverity::Error));
+	Config.Tracking.ProviderId = "not-a-tracker";
+	EXPECT_TRUE(Has(Config, "tracking.unknownProvider", "tracking.provider", ESeverity::Error));
+	for (const std::string& Known : ValidationContext::MakeDefault().KnownTrackingSources)
+	{
+		Config.Tracking.ProviderId = Known;
+		EXPECT_FALSE(Has(Config, "tracking.unknownProvider", "tracking.provider", ESeverity::Error));
+	}
+	EXPECT_EQ(ValidationContext::MakeDefault().KnownTrackingSources.size(), size_t(11));
 	Config.Tracking = TrackingConfig();
-	Config.Tracking.FreeDUdpPort = 70000;
-	EXPECT_TRUE(Has(Config, "tracking.udpPortOutOfRange", "tracking.freeDUdpPort", ESeverity::Error));
+	Config.Tracking.ProviderSettings = JsonValue(40000);
+	EXPECT_TRUE(Has(Config, "tracking.providerSettingsNotObject", "tracking.providerSettings", ESeverity::Error));
 	Config.Tracking = TrackingConfig();
 	Config.Tracking.SubjectName.clear();
 	EXPECT_TRUE(Has(Config, "tracking.subjectNameEmpty", "tracking.subjectName", ESeverity::Error));

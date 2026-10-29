@@ -11,7 +11,7 @@ calls to verify yet. Engine calls get added here as M1–M6 write them.
 
 ## Core layer on MSVC
 
-The core (`VedriVPToolkitEditor/Private/Core/*.h`) passes with clang and gcc under `-Wall -Wextra
+The core (`VedriVPToolkitEditor/Public/Core/*.h`) passes with clang and gcc under `-Wall -Wextra
 -Wpedantic -Werror -Wshadow -Wconversion -Wsign-conversion`, with `-fno-exceptions -fno-rtti`, and with
 the Unreal/Windows macro poison list. It has not been compiled by MSVC yet.
 

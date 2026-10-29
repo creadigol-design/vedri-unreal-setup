@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "name": "vedrí LED 8x3m 25p Blackmagic",
-  "description": "LED stage: 8 m x 3 m flat wall, 2 render nodes, Blackmagic DeckLink, 1080p25, Mo-Sys StarTracker, Blackmagic PYXIS 6K. Panel pitch is a placeholder: set it from your panel spec sheet.",
+  "name": "LED wall, FreeD tracking",
+  "description": "LED stage with built-in FreeD tracking, 1080p25, 2 render nodes. Enter your wall size and panel spec, video card and camera in the wizard.",
   "mode": "led",
   "videoIO": {
     "cardFamily": "blackmagic",
@@ -61,10 +61,10 @@
     "createChromakeyMarkers": true
   },
   "tracking": {
-    "source": "mosys",
-    "freeDUdpPort": 40000,
+    "provider": "freed",
     "subjectName": "TrackedCamera",
-    "autoApplyOnStartup": true
+    "autoApplyOnStartup": true,
+    "providerSettings": {}
   },
   "lens": {
     "cameraSensor": "bmd_pyxis_6k",

@@ -6,7 +6,7 @@ All notable changes are recorded here. Versions follow [Semantic Versioning](htt
 
 ### Added
 
-- Engine-independent core (`VedriVPToolkitEditor/Private/Core/`):
+- Engine-independent core (`VedriVPToolkitEditor/Public/Core/`):
   - LED wall maths: whole-tile grid and resolution from size and pitch (handles rounded published
     pitches), tile-aligned split across render nodes, optional ceiling, flat or curved surface geometry
     and viewport meshes.

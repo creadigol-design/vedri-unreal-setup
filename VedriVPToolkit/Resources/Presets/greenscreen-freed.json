@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "name": "vedrí green screen 25p Blackmagic",
-  "description": "Green screen stage: Blackmagic DeckLink, 1080p25, genlock from SDI input, clean CG out for the external keyer, Mo-Sys StarTracker, Blackmagic PYXIS 6K.",
+  "name": "Green screen, FreeD tracking",
+  "description": "Green screen stage with built-in FreeD tracking, 1080p25, clean CG out for an external keyer. Choose your video card and camera in the wizard.",
   "mode": "greenScreen",
   "videoIO": {
     "cardFamily": "blackmagic",
@@ -33,10 +33,10 @@
     "matteOutputPort": 3
   },
   "tracking": {
-    "source": "mosys",
-    "freeDUdpPort": 40000,
+    "provider": "freed",
     "subjectName": "TrackedCamera",
-    "autoApplyOnStartup": true
+    "autoApplyOnStartup": true,
+    "providerSettings": {}
   },
   "lens": {
     "cameraSensor": "bmd_pyxis_6k",

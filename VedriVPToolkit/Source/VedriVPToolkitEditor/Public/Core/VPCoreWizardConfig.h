@@ -7,6 +7,7 @@
 // enables) is resolved in the editor layer; Core only stores and validates the choices.
 
 #include "Core/VPCoreCameraSensors.h"
+#include "Core/VPCoreJson.h"
 #include "Core/VPCoreTiming.h"
 #include "Core/VPCoreValidation.h"
 #include "Core/VPCoreWallLayout.h"
@@ -110,9 +111,24 @@ namespace Vedri::Core
 	inline constexpr const char* CardFamilyBlackmagic = "blackmagic";
 	inline constexpr const char* CardFamilyAja = "aja";
 
-	/** Tracking source ids. "mosys" uses the Mo-Sys Live Link plugin when present, else FreeD. */
-	inline constexpr const char* TrackingSourceMoSys = "mosys";
-	inline constexpr const char* TrackingSourceFreeD = "freed";
+	/**
+	 * Tracking provider ids, one per IVPTrackingSourceProvider (see docs/TRACKING_PROVIDERS.md). The set is
+	 * open-ended: ValidationContext carries whatever the editor registered.
+	 */
+	// Built into the engine.
+	inline constexpr const char* TrackingProviderFreeD = "freed";
+	inline constexpr const char* TrackingProviderLiveLinkXR = "livelink-xr";
+	inline constexpr const char* TrackingProviderVrpn = "vrpn";
+	inline constexpr const char* TrackingProviderLiveLinkHub = "livelink-hub";
+	// Third-party, detected by plugin; each degrades to a "get the plugin" notice when absent.
+	/** Mo-Sys StarTracker through the free Mo-Sys Live Link plugin (decision D5), not VP Pro. */
+	inline constexpr const char* TrackingProviderMoSys = "mosys";
+	inline constexpr const char* TrackingProviderZeissCinCraft = "zeiss-cincraft";
+	inline constexpr const char* TrackingProviderStype = "stype";
+	inline constexpr const char* TrackingProviderNcam = "ncam";
+	inline constexpr const char* TrackingProviderOptiTrack = "optitrack";
+	inline constexpr const char* TrackingProviderVicon = "vicon";
+	inline constexpr const char* TrackingProviderViveMars = "vive-mars";
 
 	struct VideoIOConfig
 	{
@@ -168,11 +184,16 @@ namespace Vedri::Core
 
 	struct TrackingConfig
 	{
-		std::string Source = TrackingSourceMoSys;
-		/** TODO(verify-on-pc): match the engine's FreeD source default port and the StarTracker's FreeD output port. */
-		uint32_t FreeDUdpPort = 40000;
+		/** Provider for the primary camera. FreeD is the built-in fallback most tracking systems can output. */
+		std::string ProviderId = TrackingProviderFreeD;
 		std::string SubjectName = "TrackedCamera";
 		bool bAutoApplyOnStartup = true;
+		/**
+		 * Provider-specific settings (ports, protocol and encoder options) as a JSON object, validated by
+		 * the provider itself. A key that is absent means "use the provider's documented default", which the
+		 * provider reads from the installed engine or vendor plugin. Core never invents a port number.
+		 */
+		JsonValue ProviderSettings = JsonValue::MakeObject();
 
 		bool operator==(const TrackingConfig& Other) const = default;
 	};
@@ -225,7 +246,9 @@ namespace Vedri::Core
 		{
 			ValidationContext Context;
 			Context.KnownCardFamilies = {CardFamilyBlackmagic, CardFamilyAja};
-			Context.KnownTrackingSources = {TrackingSourceMoSys, TrackingSourceFreeD};
+			Context.KnownTrackingSources = {TrackingProviderFreeD, TrackingProviderLiveLinkXR, TrackingProviderVrpn, TrackingProviderLiveLinkHub,
+				TrackingProviderMoSys, TrackingProviderZeissCinCraft, TrackingProviderStype, TrackingProviderNcam, TrackingProviderOptiTrack,
+				TrackingProviderVicon, TrackingProviderViveMars};
 			return Context;
 		}
 	};
@@ -348,13 +371,13 @@ namespace Vedri::Core
 		}
 
 		// Tracking
-		if (!ConfigDetail::Contains(Context.KnownTrackingSources, Config.Tracking.Source))
+		if (!ConfigDetail::Contains(Context.KnownTrackingSources, Config.Tracking.ProviderId))
 		{
-			AddIssue(Issues, ESeverity::Error, "tracking.unknownSource", "tracking.source", {Config.Tracking.Source});
+			AddIssue(Issues, ESeverity::Error, "tracking.unknownProvider", "tracking.provider", {Config.Tracking.ProviderId});
 		}
-		if (Config.Tracking.FreeDUdpPort < 1 || Config.Tracking.FreeDUdpPort > 65535)
+		if (!Config.Tracking.ProviderSettings.IsObject())
 		{
-			AddIssue(Issues, ESeverity::Error, "tracking.udpPortOutOfRange", "tracking.freeDUdpPort", {FormatUInt(Config.Tracking.FreeDUdpPort)});
+			AddIssue(Issues, ESeverity::Error, "tracking.providerSettingsNotObject", "tracking.providerSettings");
 		}
 		if (Config.Tracking.SubjectName.empty())
 		{

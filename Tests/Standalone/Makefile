@@ -1,4 +1,4 @@
-# Standalone tests for the engine-independent core (VedriVPToolkitEditor/Private/Core).
+# Standalone tests for the engine-independent core (VedriVPToolkitEditor/Public/Core).
 # Needs only a C++20 compiler: Xcode command line tools on the Mac, clang or gcc on Linux.
 #
 #   make            build and run the tests with clang++ (the default), then check that every
@@ -16,7 +16,7 @@ CXX := clang++
 endif
 
 REPO_ROOT := $(abspath ../..)
-CORE_INCLUDE := $(REPO_ROOT)/VedriVPToolkit/Source/VedriVPToolkitEditor/Private
+CORE_INCLUDE := $(REPO_ROOT)/VedriVPToolkit/Source/VedriVPToolkitEditor/Public
 PRESET_DIR := $(REPO_ROOT)/VedriVPToolkit/Resources/Presets
 BUILD_DIR := build/$(notdir $(CXX))
 

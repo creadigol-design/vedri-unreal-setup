@@ -14,7 +14,7 @@ import sys
 
 def main() -> int:
     root = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
-    core = root / "VedriVPToolkit/Source/VedriVPToolkitEditor/Private/Core"
+    core = root / "VedriVPToolkit/Source/VedriVPToolkitEditor/Public/Core"
     doc = root / "docs/VALIDATION_CODES.md"
 
     emitted = set()

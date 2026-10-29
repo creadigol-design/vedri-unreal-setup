@@ -74,8 +74,8 @@ Fields are relative to `led.wall` (e.g. `led.wall.widthM`, `led.wall.ceiling.dep
 
 | Code | Sev | Arguments | English (draft) | Cymraeg |
 |---|---|---|---|---|
-| `tracking.unknownSource` | E | {0} source id | Unknown tracking source "{0}". | |
-| `tracking.udpPortOutOfRange` | E | {0} port | The UDP port must be 1–65535 (got {0}). | |
+| `tracking.unknownProvider` | E | {0} provider id | Unknown tracking provider "{0}". | |
+| `tracking.providerSettingsNotObject` | E | – | The tracking provider's settings are damaged. Reset them in the Tracking step. | |
 | `tracking.subjectNameEmpty` | E | – | Enter a Live Link subject name. | |
 | `lens.unknownCameraPreset` | W | {0} preset id | Unknown camera "{0}": the sensor size is used as entered. | |
 | `lens.sensorDiffersFromPreset` | W | {0} camera name, {1} width mm, {2} height mm | {1} × {2} mm doesn't match the {0}'s sensor. Choose Custom if you're shooting in a crop mode. | |

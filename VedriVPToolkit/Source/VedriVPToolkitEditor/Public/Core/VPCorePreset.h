@@ -309,10 +309,10 @@ namespace Vedri::Core
 		}
 
 		JsonValue Tracking = JsonValue::MakeObject();
-		Tracking.Set("source", Config.Tracking.Source);
-		Tracking.Set("freeDUdpPort", Config.Tracking.FreeDUdpPort);
+		Tracking.Set("provider", Config.Tracking.ProviderId);
 		Tracking.Set("subjectName", Config.Tracking.SubjectName);
 		Tracking.Set("autoApplyOnStartup", Config.Tracking.bAutoApplyOnStartup);
+		Tracking.Set("providerSettings", Config.Tracking.ProviderSettings);
 		Json.Set("tracking", std::move(Tracking));
 
 		JsonValue Lens = JsonValue::MakeObject();
@@ -439,10 +439,14 @@ namespace Vedri::Core
 		if (const JsonValue* Tracking = Root.Object("tracking"))
 		{
 			PresetDetail::ObjectReader Reader(*Tracking, "tracking", Issues);
-			Reader.String("source", OutConfig.Tracking.Source);
-			Reader.UInt("freeDUdpPort", OutConfig.Tracking.FreeDUdpPort);
+			Reader.String("provider", OutConfig.Tracking.ProviderId);
 			Reader.String("subjectName", OutConfig.Tracking.SubjectName);
 			Reader.Bool("autoApplyOnStartup", OutConfig.Tracking.bAutoApplyOnStartup);
+			// Kept as-is: the provider owns and validates these keys.
+			if (const JsonValue* Settings = Reader.Object("providerSettings"))
+			{
+				OutConfig.Tracking.ProviderSettings = *Settings;
+			}
 			Reader.ReportUnknownFields();
 		}
 
